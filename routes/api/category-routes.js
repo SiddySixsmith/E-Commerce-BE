@@ -34,7 +34,7 @@ router.post('/', (req, res) => {
   Category.create(req.body)
     .then((category) => {
       // if there's Category tags, we need to create pairings to bulk create in the CategoryTag model
-      if (req.body.productIds.length) {
+      if (req.body.productIds) {
         const categoryProductIdArr = req.body.productIds.map((product_id) => {
           return {
             category_id: category.id,
@@ -44,7 +44,7 @@ router.post('/', (req, res) => {
         return categoryTag.bulkCreate(categoryProductIdArr);
       }
       // if no Category tags, just respond
-      res.status(200).json(Category);
+      res.status(200).json(category);
     })
     .then((categoryProductIds) => res.status(200).json(categoryProductIds))
     .catch((err) => {
@@ -54,42 +54,19 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  Category.update(req.body, {
-    where: {
-      id: req.params.id,
-    },
-  })
-    .then((category) => {
-      // find all associated tags from CategoryTag
-      return categoryProduct.findAll({ where: { category_id: req.params.id } });
+  Category.update(
+    req.body, { where: { id: req.params.id } }
+  )
+    .then(categoryData => {
+      if (!categoryData[0]) {
+        res.status(404).json({ message: 'No category found with this id!' });
+        return;
+      }
+      res.json(categoryData);
     })
-    .then((categoryProducts) => {
-      // get list of current tag_ids
-      const categoryTagIds = categoryProducts.map(({ product_id }) => product_id);
-      // create filtered list of new tag_ids
-      const newCategoryTags = req.body.productIds
-        .filter((product_id) => !categoryTagIds.includes(product_id))
-        .map((product_id) => {
-          return {
-            category_id: req.params.id,
-            product_id,
-          };
-        });
-      // figure out which ones to remove
-      const categoryProductsToRemove = categoryProducts
-        .filter(({ product_id }) => !req.body.productIds.includes(product_id))
-        .map(({ id }) => id);
-
-      // run both actions
-      return Promise.all([
-        categoryProducts.destroy({ where: { id: categoryProductsToRemove } }),
-        categoryProducts.bulkCreate(newCategoryTags),
-      ]);
-    })
-    .then((updatedCategoryProducts) => res.json(updatedCategoryProducts))
-    .catch((err) => {
-      // console.log(err);
-      res.status(400).json(err);
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
     });
 });
 
