@@ -30,7 +30,7 @@
 
 
   ## Testing
-  [![Alternate Text]()](https://drive.google.com/file/d/1wB2jxEAL6SwSnGUVPrf93koSZ00lEUiT/view?usp=sharing "Testing")
+  [![link to video]()](https://drive.google.com/file/d/1wB2jxEAL6SwSnGUVPrf93koSZ00lEUiT/view?usp=sharing "Testing")
 
   ## Questions
   If you have any questions or issues with this application please feel free let me know on my profile 
